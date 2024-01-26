@@ -19,7 +19,7 @@ const userSchema = new Schema(
     email: {
       type: String,
       required: [true, "Email is required"],
-      unique: true
+      unique: true,
     },
     password: {
       type: String,
@@ -31,7 +31,7 @@ const userSchema = new Schema(
     profileImage: {
       type: String,
     },
-    coverImage : String,
+    coverImage: String,
     watchHistory: [
       {
         type: Schema.Types.ObjectId,
@@ -52,7 +52,7 @@ userSchema.pre("save", async function (next) {
 });
 
 userSchema.methods.isPasswordCorrect = async function (password) {
-  return await bcrypt.compare(password, this.password)
+  return await bcrypt.compare(password, this.password);
 };
 
 userSchema.methods.generateAccessToken = function () {
