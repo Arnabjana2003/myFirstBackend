@@ -1,19 +1,18 @@
 import { Router } from "express";
-import {registerUser} from "../controllers/user.controller.js"
-import {upload} from "../middleware/multer.middleware.js"
-const router = Router()
+import { registerUser } from "../controllers/user.controller.js";
+import { upload } from "../middleware/multer.middleware.js";
+const router = Router();
 
 router.route("/register").post(
-    upload.fields([
-        {
-            name: "profileImage",
-            maxCount: 1
-        },
-        {
-            name: "coverImage",
-            maxCount: 1
-        }
-    ]),
-    registerUser)
+  upload.fields([
+    {
+      name: "profileImage",
+    },
+    {
+      name: "coverImage",
+    },
+  ]),
+  registerUser
+);
 
-export default router
+export default router;

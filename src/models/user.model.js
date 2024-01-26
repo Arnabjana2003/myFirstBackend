@@ -19,6 +19,7 @@ const userSchema = new Schema(
     email: {
       type: String,
       required: [true, "Email is required"],
+      unique: true
     },
     password: {
       type: String,
@@ -29,8 +30,8 @@ const userSchema = new Schema(
     },
     profileImage: {
       type: String,
-      required: [true, "Profile Photo is required"]
     },
+    coverImage : String,
     watchHistory: [
       {
         type: Schema.Types.ObjectId,
