@@ -3,6 +3,12 @@ import ApiError from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
 import uploadOnCloudinary from "../utils/cloudinary.js";
 import ApiResponse from "../utils/apiResponse.js";
+import jwt from "jsonwebtoken"
+
+const cookieOptions = {
+  httpOnly: true,
+  secure: true,
+};
 
 const generateAccessAndRefreshToken = (userRef) => {
   try {
@@ -106,10 +112,6 @@ const loginUser = asyncHandler(async (req, res) => {
   data.password = undefined;
   data.refreshToken = undefined;
 
-  const cookieOptions = {
-    httpOnly: true,
-    secure: true,
-  };
 
   return res
     .status(200)
@@ -131,10 +133,7 @@ const logoutUser = asyncHandler(async (req, res) => {
   data.refreshToken = undefined;
   await data.save({ validateBeforeSave: false });
 
-  const cookieOptions = {
-    httpOnly: true,
-    secure: true,
-  };
+
 
   return res
     .status(200)
@@ -143,4 +142,35 @@ const logoutUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, "Logged out successfully", {}));
 });
 
-export { registerUser, loginUser, logoutUser };
+const refreshAccessToken = asyncHandler( async (req,res)=>{
+  const incomingRefreshToken = req.cookies?.refreshToken || req.body?.refreshToken || req.header("refreshToken")
+  if(!incomingRefreshToken) throw new ApiError(404,"Missing Refresh token")
+
+  //verify the token
+  const decodedValue = jwt.verify(incomingRefreshToken,process.env.REFRESH_TOKEN_SECRET)
+
+  //get the user
+  const user = await User.findById(decodedValue?._id)
+  if(!user) throw new ApiError(401,"Unauthorized request");
+
+  //check the token
+  if(incomingRefreshToken !== user.refreshToken) throw new ApiError(401, "Token is expired")
+
+  const {accessToken,refreshToken} = generateAccessAndRefreshToken(user)
+
+  //set new refresh token to the database
+  user.refreshToken = refreshToken
+  await user.save({validateBeforeSave: false})
+
+  return res
+  .status(200)
+  .cookie("refreshToken",refreshToken,cookieOptions)
+  .cookie("accessToken",accessToken,cookieOptions)
+  .json(
+    new ApiResponse(200,
+      "Access token is refreshed",{refreshToken,accessToken})
+  )
+
+})
+
+export { registerUser, loginUser, logoutUser,refreshAccessToken };
