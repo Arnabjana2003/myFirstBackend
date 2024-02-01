@@ -31,7 +31,9 @@ const userSchema = new Schema(
     profileImage: {
       type: String,
     },
+    profileImageFileName: String,
     coverImage: String,
+    coverImageFileName: String,
     watchHistory: [
       {
         type: Schema.Types.ObjectId,

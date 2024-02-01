@@ -7,12 +7,12 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const uploadOnCloudinary = async (localFilePath) => {
+const uploadOnCloudinary = async (localFilePath,folder="",userid="") => {
   try {
     if (!localFilePath) return null;
 
     const uploadResponse = await cloudinary.uploader.upload(localFilePath, {
-      public_id: `firstbackend/${Date.now()}`,
+      public_id: `firstbackend/${folder}/${userid || Date.now()}`,
       resource_type: "auto",
     });
     fs.unlinkSync(localFilePath);
@@ -20,11 +20,21 @@ const uploadOnCloudinary = async (localFilePath) => {
     // url will be get on uploadResponse.url
     return uploadResponse;
   } catch (error) {
-    console.log("cloudinary error:", error);
+    console.log("cloudinary error while uploading:", error);
 
     //if the uploading operation get failed then delete the local file also
     fs.unlinkSync(localFilePath);
     throw error;
   }
 };
-export default uploadOnCloudinary;
+
+const deleteFromCloudinary = async (publicIdToDelete)=>{
+  try {
+    const deletedResponse = await cloudinary.uploader.destroy(`firstbackend/${publicIdToDelete}`);
+    return deletedResponse.result
+  } catch (error) {
+    console.log("cloudinary error while deleting:", error);
+    throw error;
+  }
+}
+export {uploadOnCloudinary,deleteFromCloudinary};
